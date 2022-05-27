@@ -37,8 +37,22 @@ async function run() {
     const bookingCollection = client.db('lucky_tools').collection('bookings');
     const paymentCollection = client.db('lucky_tools').collection('payments');
 
-    
 
+       app.patch('/booking/:id', async (req, res) => {
+        const id = req.params;
+        const payment = req.body;
+        const filter = { _id: ObjectId(id) };
+        const updatedDoc = {
+          
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+          }
+          }
+          const result = await paymentCollection.find().toArray();
+        const updateBooking = await bookingCollection.updateOne(filter, updatedDoc);
+        res.send(updatedDoc);
+      });
     app.get('/service', async (req, res) => {
         const query = {};
         const cursor = serviceCollection.find(query);
@@ -49,11 +63,29 @@ async function run() {
         const users = await userCollection.find().toArray();
         res.send(users);
     });
+     app.get('/admin/:email', async(req, res) =>{
+      const email = req.params.email;
+      const user = await userCollection.findOne({email: email});
+      const isAdmin = user.role === 'admin';
+      res.send({admin: isAdmin})
+    })
+
+      app.put('/user/admin/:email',async (req, res) => {
+        const email = req.params.email;  
+        const filter = { email: email };       
+        const updateDoc = {
+        $set: {role:'admin'},
+        };
+        const result=await userCollection.updateOne(filter,updateDoc)
+        res.send(result);
+        
+        
+      })
     
       app.get('/booking', async(req, res) =>{
       const customer = req.query.customer;
         
-      const query = {customer: customer};
+      const query = {};
       const bookings = await bookingCollection.find(query).toArray();
       return res.send(bookings);
        
