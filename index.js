@@ -37,8 +37,7 @@ async function run() {
     const bookingCollection = client.db('lucky_tools').collection('bookings');
     const paymentCollection = client.db('lucky_tools').collection('payments');
 
-
-       app.patch('/booking/:id', async (req, res) => {
+      app.patch('/booking/:id', async (req, res) => {
         const id = req.params;
         const payment = req.body;
         const filter = { _id: ObjectId(id) };
@@ -59,6 +58,11 @@ async function run() {
         const services = await cursor.toArray();
         res.send(services)
     });
+    app.post('/service', async (req, res) => {
+        const doctor = req.body;
+        const result = await serviceCollection.insertOne(doctor);
+        res.send(result);
+      })
     app.get('/user', async (req, res) => {
         const users = await userCollection.find().toArray();
         res.send(users);
