@@ -39,16 +39,16 @@ async function run() {
     const bookingCollection = client.db('lucky_tools').collection('bookings');
     const paymentCollection = client.db('lucky_tools').collection('payments');
 
-    const verifyAdmin = async (req, res, next) => {
-        const requester = req.decoded.email;
-        const requesterAccount=await userCollection.findOne({email:requester})
-        if (requesterAccount.role === 'admin') {
-          next();
-        }
-        else {
-          res.status(403).send({message:"Forbidden"})
-        }
-      }
+    // const verifyAdmin = async (req, res, next) => {
+    //     const requester = req.decoded.email;
+    //     const requesterAccount=await userCollection.findOne({email:requester})
+    //     if (requesterAccount.role === 'admin') {
+    //       next();
+    //     }
+    //     else {
+    //       res.status(403).send({message:"Forbidden"})
+    //     }
+    //   }
     app.post('/create-payment-intent',verifyJWT, async (req, res) => {
         const service = req.body;
         const price = service.price;
@@ -102,7 +102,7 @@ async function run() {
       res.send({admin: isAdmin})
     })
 
-      app.put('/user/admin/:email',verifyJWT,verifyAdmin,async (req, res) => {
+      app.put('/user/admin/:email',verifyJWT,async (req, res) => {
         const email = req.params.email;  
         const filter = { email: email };       
         const updateDoc = {
