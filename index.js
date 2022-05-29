@@ -39,17 +39,7 @@ async function run() {
     const bookingCollection = client.db('lucky_tools').collection('bookings');
     const paymentCollection = client.db('lucky_tools').collection('payments');
 
-    // const verifyAdmin = async (req, res, next) => {
-    //     const requester = req.decoded.email;
-    //     const requesterAccount=await userCollection.findOne({email:requester})
-    //     if (requesterAccount.role === 'admin') {
-    //       next();
-    //     }
-    //     else {
-    //       res.status(403).send({message:"Forbidden"})
-    //     }
-    //   }
-    app.post('/create-payment-intent',verifyJWT, async (req, res) => {
+    app.post('/create-payment-intent', async (req, res) => {
         const service = req.body;
         const price = service.price;
         const amount = price * 100;
@@ -135,7 +125,7 @@ async function run() {
       }
       
     });
-    app.patch('/booking/:id', verifyJWT, async (req, res) => {
+    app.patch('/booking/:id', async (req, res) => {
         const id = req.params;
         const payment = req.body;
         const filter = { _id: ObjectId(id) };
