@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
 
 const app = express()
@@ -38,6 +38,19 @@ async function run() {
     const userCollection = client.db('lucky_tools').collection('users');
     const bookingCollection = client.db('lucky_tools').collection('bookings');
     const paymentCollection = client.db('lucky_tools').collection('payments');
+
+    app.post('/create-payment-intent',verifyJWT, async (req, res) => {
+        const service = req.body;
+        const price = service.price;
+        const amount = price * 100;
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amount,
+          currency: 'usd',
+          payment_method_types: ['card']
+        })
+        res.send({ clientSecret: paymentIntent.client_secret })
+
+      });
     app.get('/user', async (req, res) => {
         const users = await userCollection.find().toArray();
         res.send(users);
@@ -112,7 +125,21 @@ async function run() {
       }
       
     });
-   
+    app.patch('/booking/:id', verifyJWT, async (req, res) => {
+        const id = req.params;
+        const payment = req.body;
+        const filter = { _id: ObjectId(id) };
+        const updatedDoc = {
+          
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+          }
+          }
+          const result = await paymentCollection.find().toArray();
+        const updateBooking = await bookingCollection.updateOne(filter, updatedDoc);
+        res.send(updatedDoc);
+      });
     app.post('/booking', async (req, res) => {
         const booking = req.body;
         const query = { service: booking.service, price: booking.price, customer: booking.customer,customerName:booking.customerName }
