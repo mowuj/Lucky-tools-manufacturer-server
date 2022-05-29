@@ -125,7 +125,7 @@ async function run() {
       }
       
     });
-    app.patch('/booking/:id', async (req, res) => {
+    app.patch('/booking/:id', verifyJWT, async (req, res) => {
         const id = req.params;
         const payment = req.body;
         const filter = { _id: ObjectId(id) };
