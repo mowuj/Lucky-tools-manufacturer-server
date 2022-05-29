@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express()
@@ -39,13 +39,19 @@ async function run() {
     const bookingCollection = client.db('lucky_tools').collection('bookings');
     const paymentCollection = client.db('lucky_tools').collection('payments');
 
-      app.post('/login', async (req, res) => {
-            const user = req.body;
-            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1h'
-            });
-            res.send({ accessToken });
-        });
+    app.put('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+      $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options)
+      const token =jwt.sign({email:email},process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
+      res.send([result,token])
+    })
+
     app.get('/service', async (req, res) => {
         const query = {};
         const cursor = serviceCollection.find(query);
@@ -61,6 +67,7 @@ async function run() {
         const users = await userCollection.find().toArray();
         res.send(users);
     });
+   
     
      app.get('/admin/:email', async(req, res) =>{
       const email = req.params.email;
@@ -87,7 +94,8 @@ async function run() {
       const booking = await bookingCollection.findOne(query);
       res.send(booking);
     })
-    app.get('/booking',verifyJWT, async(req, res) =>{
+
+    app.get('/booking', async(req, res) =>{
         const customer = req.query.customer;
         
         const decodedEmail = req.decoded.email;
